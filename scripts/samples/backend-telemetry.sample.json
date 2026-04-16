@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp": "2026-04-15T17:42:10.102144+00:00",
+  "sequence": 405,
+  "vehicle": {
+    "id": "ATHENA-SIM-001",
+    "connection": {
+      "status": "connected",
+      "signal_strength_pct": 80.63
+    },
+    "flight": {
+      "mode": "CRUISE",
+      "system_status": "nominal"
+    }
+  },
+  "attitude": {
+    "roll_deg": 9.51,
+    "pitch_deg": -1.76,
+    "heading_deg": 117.48
+  },
+  "altitude": {
+    "relative_m": 128.42,
+    "vertical_speed_mps": 0.41
+  },
+  "power": {
+    "battery_pct": 99.12
+  },
+  "health": {
+    "temperature_c": 48.88,
+    "imu_quality_pct": 97.22
+  }
+}
