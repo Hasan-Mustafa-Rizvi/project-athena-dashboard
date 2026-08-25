@@ -50,7 +50,12 @@ export function TelemetryCard({
   const [displayValue, setDisplayValue] = useState(value);
   const [isFlashing, setIsFlashing] = useState(false);
 
-  // Smooth value transition
+  // Smooth value transition.
+  //
+  // The eased read-out is driven by a re-render cascade, which
+  // `react-hooks/set-state-in-effect` flags. Migrating it to requestAnimationFrame is
+  // tracked in the README roadmap; behaviour is intentionally left unchanged for now.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const diff = value - displayValue;
     if (Math.abs(diff) < 0.01) return;
@@ -66,6 +71,7 @@ export function TelemetryCard({
       return () => clearTimeout(timeout);
     }
   }, [value, displayValue]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const colorClass = colorMap[color];
   const glowClass = glowMap[color];

@@ -8,11 +8,36 @@ import { motion } from 'framer-motion';
 import { Battery, Zap } from 'lucide-react';
 
 interface BatteryCardProps {
-  percentage: number;
+  percentage: number | null;
   voltage?: number;
 }
 
 export function BatteryCard({ percentage, voltage = 15.2 }: BatteryCardProps) {
+  if (percentage === null) {
+    return (
+      <motion.div
+        className="p-4 rounded-xl border border-[rgba(163,194,212,0.14)] bg-[#111827]/60 backdrop-blur-sm"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Battery className="w-4 h-4 text-[#A9B3C1]" />
+            <span className="text-xs font-medium text-[#A9B3C1] uppercase tracking-wider">
+              Battery
+            </span>
+          </div>
+          <Zap className="w-4 h-4 text-[#A9B3C1]" />
+        </div>
+        <div className="text-3xl font-bold font-['Space_Grotesk'] text-[#A9B3C1] mb-2">--</div>
+        <div className="text-xs text-[#A9B3C1] mb-3">N/A</div>
+        <div className="h-2 rounded-sm bg-[rgba(163, 194, 212, 0.15)]" />
+        <div className="mt-2 text-xs text-[#A9B3C1]">No battery sensor</div>
+      </motion.div>
+    );
+  }
+
   // Determine color based on percentage
   const getColor = (pct: number): string => {
     if (pct > 50) return '#22C55E';

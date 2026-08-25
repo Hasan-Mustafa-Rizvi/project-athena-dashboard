@@ -33,7 +33,7 @@ export interface Altitude {
 }
 
 export interface Power {
-  battery_pct: number;
+  battery_pct: number | null;
 }
 
 export interface Health {
@@ -50,6 +50,17 @@ export interface TelemetryPayload {
   altitude: Altitude;
   power: Power;
   health: Health;
+  telemetry_source?: 'frontend-mock' | 'frontend-simulation' | 'backend-mock' | 'hardware' | 'unknown';
+  heading_is_estimated?: boolean;
+  altitude_is_relative?: boolean;
+  battery_available?: boolean;
+  calibration_status?: 'calibrating' | 'ready' | 'unknown';
+  calibration_samples?: number;
+  sensor_status?: {
+    imu_ok?: boolean;
+    baro_ok?: boolean;
+    serial_connected?: boolean;
+  };
 }
 
 // Console log entry type

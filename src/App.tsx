@@ -38,6 +38,14 @@ function App() {
     reconnect 
   } = useTelemetry();
 
+  const sourceLabel = (telemetry.telemetry_source ?? 'unknown').toUpperCase();
+  const batteryPct = telemetry.power.battery_pct;
+  const batteryVoltage = batteryPct === null ? undefined : 15.2 - (100 - batteryPct) * 0.02;
+  const isHardwareSource = telemetry.telemetry_source === 'hardware';
+  const headingIsEstimated = telemetry.heading_is_estimated ?? isHardwareSource;
+  const altitudeIsRelative = telemetry.altitude_is_relative ?? isHardwareSource;
+  const calibrationStatus = telemetry.calibration_status;
+
   // Get cardinal direction for heading
   const getCardinal = (deg: number): string => {
     const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -92,8 +100,8 @@ function App() {
 
               {/* Battery */}
               <BatteryCard 
-                percentage={telemetry.power.battery_pct}
-                voltage={15.2 - (100 - telemetry.power.battery_pct) * 0.02}
+                percentage={batteryPct}
+                voltage={batteryVoltage}
               />
 
               {/* Signal */}
@@ -117,6 +125,17 @@ function App() {
                 <div className="text-xs text-[#A9B3C1] font-mono mb-3">
                   {TELEMETRY_WS_URL}
                 </div>
+                <div className="text-xs text-[#A9B3C1] font-mono mb-3">
+                  SOURCE: <span className="text-[#22D3EE]">{sourceLabel}</span>
+                </div>
+                {isHardwareSource && (
+                  <div className="text-xs text-[#A9B3C1] font-mono mb-3">
+                    CAL: <span className={calibrationStatus === 'ready' ? 'text-[#22C55E]' : 'text-[#F59E0B]'}>
+                      {(calibrationStatus ?? 'unknown').toUpperCase()}
+                    </span>
+                    {typeof telemetry.calibration_samples === 'number' ? ` (${telemetry.calibration_samples})` : ''}
+                  </div>
+                )}
                 <button
                   onClick={reconnect}
                   disabled={connectionState === 'connecting'}
@@ -187,23 +206,23 @@ function App() {
 
             {/* Altitude */}
             <TelemetryCard
-              label="Altitude"
+              label={altitudeIsRelative ? 'Relative Altitude' : 'Altitude'}
               value={telemetry.altitude.relative_m}
               unit="m"
               subValue={`V/S ${telemetry.altitude.vertical_speed_mps >= 0 ? '+' : ''}${telemetry.altitude.vertical_speed_mps.toFixed(2)} m/s`}
               color="blue"
               icon={<ArrowUpFromLine className="w-4 h-4" />}
               miniIndicator="bar"
-              minValue={0}
-              maxValue={200}
+              minValue={altitudeIsRelative ? -50 : 0}
+              maxValue={altitudeIsRelative ? 50 : 200}
             />
 
             {/* Heading */}
             <TelemetryCard
-              label="Heading"
+              label={headingIsEstimated ? 'Estimated Yaw' : 'Heading'}
               value={telemetry.attitude.heading_deg}
               unit="°"
-              subValue={getCardinal(telemetry.attitude.heading_deg)}
+              subValue={headingIsEstimated ? 'GYRO ESTIMATE' : getCardinal(telemetry.attitude.heading_deg)}
               color="amber"
               icon={<Compass className="w-4 h-4" />}
               miniIndicator="bar"

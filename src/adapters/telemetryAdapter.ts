@@ -3,6 +3,8 @@ import type { TelemetryPayload } from '@/types/telemetry';
 const CONNECTION_STATES = new Set(['connected', 'degraded', 'disconnected']);
 const FLIGHT_MODES = new Set(['STABILIZE', 'AUTO_LEVEL', 'CRUISE', 'LOITER', 'RTL']);
 const SYSTEM_STATUSES = new Set(['nominal', 'caution', 'warning']);
+const TELEMETRY_SOURCES = new Set(['frontend-mock', 'frontend-simulation', 'backend-mock', 'hardware', 'unknown']);
+const CALIBRATION_STATUSES = new Set(['calibrating', 'ready', 'unknown']);
 
 const isRecord = (value: unknown): value is Record<string, unknown> => (
   typeof value === 'object' && value !== null
@@ -86,7 +88,6 @@ export const parseTelemetryPayload = (raw: unknown): TelemetryPayload | null => 
     heading === null ||
     relativeAltitude === null ||
     verticalSpeed === null ||
-    batteryPct === null ||
     signalStrength === null ||
     temperature === null ||
     imuQuality === null
@@ -115,15 +116,36 @@ export const parseTelemetryPayload = (raw: unknown): TelemetryPayload | null => 
       heading_deg: normalizeHeading(heading),
     },
     altitude: {
-      relative_m: Math.max(0, relativeAltitude),
+      relative_m: relativeAltitude,
       vertical_speed_mps: verticalSpeed,
     },
     power: {
-      battery_pct: clamp(batteryPct, 0, 100),
+      battery_pct: batteryPct === null ? null : clamp(batteryPct, 0, 100),
     },
     health: {
       temperature_c: temperature,
       imu_quality_pct: clamp(imuQuality, 0, 100),
     },
+    telemetry_source:
+      typeof raw.telemetry_source === 'string' && TELEMETRY_SOURCES.has(raw.telemetry_source)
+        ? (raw.telemetry_source as TelemetryPayload['telemetry_source'])
+        : undefined,
+    heading_is_estimated: typeof raw.heading_is_estimated === 'boolean' ? raw.heading_is_estimated : undefined,
+    altitude_is_relative: typeof raw.altitude_is_relative === 'boolean' ? raw.altitude_is_relative : undefined,
+    battery_available: typeof raw.battery_available === 'boolean' ? raw.battery_available : undefined,
+    calibration_status:
+      typeof raw.calibration_status === 'string' && CALIBRATION_STATUSES.has(raw.calibration_status)
+        ? (raw.calibration_status as TelemetryPayload['calibration_status'])
+        : undefined,
+    calibration_samples: asFiniteNumber(raw.calibration_samples) ?? undefined,
+    sensor_status:
+      isRecord(raw.sensor_status)
+        ? {
+            imu_ok: typeof raw.sensor_status.imu_ok === 'boolean' ? raw.sensor_status.imu_ok : undefined,
+            baro_ok: typeof raw.sensor_status.baro_ok === 'boolean' ? raw.sensor_status.baro_ok : undefined,
+            serial_connected:
+              typeof raw.sensor_status.serial_connected === 'boolean' ? raw.sensor_status.serial_connected : undefined,
+          }
+        : undefined,
   };
 };
